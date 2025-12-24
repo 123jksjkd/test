@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Camera - Sinh Nhật Hưng</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="background: #000; color: #FFD700; font-family: Arial; text-align: center; padding: 50px;">
+    <h1>🎥 TEST CAMERA NETLIFY</h1>
+    
+    <div style="margin: 30px;">
+        <video id="video" width="640" height="480" autoplay style="border: 3px solid #FFD700; border-radius: 10px;"></video>
+    </div>
+    
+    <div id="status" style="margin: 20px; font-size: 18px;">
+        Đang kiểm tra camera...
+    </div>
+    
+    <div style="margin: 30px;">
+        <button onclick="testCamera()" style="background: #D32F2F; color: white; border: 2px solid #FFD700; padding: 15px 30px; border-radius: 25px; font-size: 16px; cursor: pointer;">
+            🔄 TEST LẠI CAMERA
+        </button>
+    </div>
+    
+    <div style="background: #222; padding: 20px; border-radius: 10px; max-width: 600px; margin: 0 auto; text-align: left;">
+        <h3>📋 Thông tin:</h3>
+        <p>• Domain: <span id="domain"></span></p>
+        <p>• HTTPS: <span id="https"></span></p>
+        <p>• Camera: <span id="camera-count">Đang kiểm tra...</span></p>
+        <p>• User Agent: <span id="ua" style="font-size: 12px; color: #aaa;"></span></p>
+    </div>
+    
+    <script>
+        document.getElementById('domain').textContent = window.location.hostname;
+        document.getElementById('https').textContent = window.location.protocol === 'https:' ? '✅ Có' : '❌ Không';
+        document.getElementById('ua').textContent = navigator.userAgent;
+        
+        async function testCamera() {
+            const status = document.getElementById('status');
+            const video = document.getElementById('video');
+            const cameraCount = document.getElementById('camera-count');
+            
+            try {
+                status.innerHTML = '🔍 Đang kiểm tra thiết bị camera...';
+                
+                // Kiểm tra số lượng camera
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const cameras = devices.filter(d => d.kind === 'videoinput');
+                cameraCount.textContent = `Tìm thấy ${cameras.length} camera`;
+                
+                if (cameras.length === 0) {
+                    status.innerHTML = '❌ Không tìm thấy camera nào!';
+                    return;
+                }
+                
+                status.innerHTML = '📷 Đang yêu cầu quyền truy cập camera...';
+                
+                // Yêu cầu camera
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    },
+                    audio: false
+                });
+                
+                video.srcObject = stream;
+                status.innerHTML = '✅ Camera hoạt động bình thường!';
+                status.style.color = '#4CAF50';
+                
+            } catch (err) {
+                console.error('Camera error:', err);
+                status.innerHTML = `❌ Lỗi: ${err.name} - ${err.message}`;
+                status.style.color = '#ff6b6b';
+            }
+        }
+        
+        // Tự động test khi load trang
+        window.onload = testCamera;
+    </script>
+</body>
+</html>
